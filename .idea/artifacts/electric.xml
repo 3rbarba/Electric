@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="electric">
+    <output-path>$USER_HOME$/Desktop</output-path>
+    <root id="archive" name="electric.jar">
+      <element id="module-output" name="ELETRIC" />
+    </root>
+  </artifact>
+</component>
