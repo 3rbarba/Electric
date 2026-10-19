@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="screen.equipamentosScreen">
+  <grid id="27dc6" binding="main" layout-manager="GridLayoutManager" row-count="3" column-count="6" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="20" left="20" bottom="20" right="20"/>
+    <constraints>
+      <xy x="20" y="20" width="750" height="500"/>
+    </constraints>
+    <properties>
+      <background color="-15656921"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <grid id="4cc39" binding="panelForm" layout-manager="GridLayoutManager" row-count="2" column-count="6" same-size-horizontally="false" same-size-vertically="false" hgap="12" vgap="8">
+        <margin top="18" left="18" bottom="18" right="18"/>
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="6" vsize-policy="0" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-14735049"/>
+        </properties>
+        <border type="line" title="EQUIPAMENTOS ESPECIAIS" title-justification="2">
+          <title-color color="-1710101"/>
+        </border>
+        <children>
+          <component id="73786" class="javax.swing.JLabel" binding="NomeTXT">
+            <constraints>
+              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <font name="Dialog" size="13" style="1"/>
+              <foreground color="-6511697"/>
+              <text value="Nome (opcional):"/>
+            </properties>
+          </component>
+          <component id="203da" class="javax.swing.JLabel" binding="PotenciaTXT">
+            <constraints>
+              <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <font name="Dialog" size="13" style="1"/>
+              <foreground color="-6511697"/>
+              <text value="Potência (W):"/>
+            </properties>
+          </component>
+          <component id="83d23" class="javax.swing.JButton" binding="btnAdicionarEquipamento">
+            <constraints>
+              <grid row="1" column="4" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <background color="-15763858"/>
+              <font name="Dialog" size="13" style="1"/>
+              <foreground color="-1710101"/>
+              <requestFocusEnabled value="false"/>
+              <text value="Adicionar"/>
+            </properties>
+          </component>
+          <component id="6b443" class="javax.swing.JTextField" binding="txtNomeEquipamento">
+            <constraints>
+              <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <background color="-15656921"/>
+              <font name="Dialog" size="13"/>
+              <foreground color="-1710101"/>
+            </properties>
+          </component>
+          <component id="9403e" class="javax.swing.JTextField" binding="txtPotenciaTotal">
+            <constraints>
+              <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="1" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <background color="-15656921"/>
+              <font name="Dialog" size="13"/>
+              <foreground color="-1710101"/>
+            </properties>
+          </component>
+          <component id="3b913" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <font name="Dialog" size="13" style="1"/>
+              <foreground color="-6511697"/>
+              <text value="Equipamentos:"/>
+            </properties>
+          </component>
+          <component id="c04f" class="javax.swing.JComboBox" binding="comboTipoEquipamento">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <background color="-15656921"/>
+              <font name="Dialog" size="13"/>
+              <foreground color="-1710101"/>
+              <model>
+                <item value="Chuveiros(tab7)"/>
+                <item value="Torneira elétrica(tab7)"/>
+                <item value="Aquecedores de agua(tab7)"/>
+                <item value="Ferro elétrico(tab7)"/>
+                <item value="Aquecedor central(tab8)"/>
+                <item value="Secadora de roupa(tab9)"/>
+                <item value="Forno elétrico(tab9)"/>
+                <item value="Lava roupas(tab9)"/>
+                <item value="Lava louças(tab9)"/>
+                <item value="Micro-ondas(tab9)"/>
+                <item value="Fogões elétricos(tab10)"/>
+                <item value="Ar-condicionado(tab11)"/>
+                <item value="Bombas(tab16)"/>
+                <item value="Hidromassagem(tab16)"/>
+              </model>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <scrollpane id="scroll_eq" binding="scrollPaneEquipamentos">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="6" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-14735049"/>
+        </properties>
+        <border type="line"/>
+        <children>
+          <component id="95f58" class="javax.swing.JTable" binding="tabelaEquipamentos">
+            <constraints/>
+            <properties>
+              <background color="-14735049"/>
+              <font name="Dialog" size="14"/>
+              <foreground color="-1710101"/>
+              <selectionBackground color="-15763858"/>
+              <selectionForeground color="-1710101"/>
+            </properties>
+          </component>
+        </children>
+      </scrollpane>
+      <component id="btn_ant" class="javax.swing.JButton" binding="btnAnterior">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-13418155"/>
+          <font name="Dialog" size="13" style="1"/>
+          <foreground color="-1710101"/>
+          <requestFocusEnabled value="false"/>
+          <text value="Anterior"/>
+        </properties>
+      </component>
+      <component id="btn_remove" class="javax.swing.JButton" binding="btnRemoverEquipamento">
+        <constraints>
+          <grid row="2" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-13418155"/>
+          <font name="Dialog" size="13" style="1"/>
+          <foreground color="-1710101"/>
+          <requestFocusEnabled value="false"/>
+          <text value="Remover selecionado"/>
+        </properties>
+      </component>
+      <component id="btn_next" class="javax.swing.JButton" binding="btnProximo">
+        <constraints>
+          <grid row="2" column="4" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-15763858"/>
+          <font name="Dialog" size="13" style="1"/>
+          <foreground color="-1710101"/>
+          <requestFocusEnabled value="false"/>
+          <text value="Próximo"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>

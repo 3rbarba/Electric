@@ -3,162 +3,248 @@
   <grid id="27dc6" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="686" height="712"/>
+      <xy x="20" y="20" width="866" height="712"/>
     </constraints>
     <properties/>
     <border type="none"/>
     <children>
       <grid id="91ea8" binding="main" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-        <margin top="0" left="0" bottom="0" right="0"/>
+        <margin top="20" left="20" bottom="20" right="20"/>
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
+          <background color="-15656921"/>
           <focusTraversalPolicyProvider value="false"/>
-          <foreground color="-16777216"/>
+          <foreground color="-1710101"/>
         </properties>
         <border type="none">
           <font/>
           <title-color color="-16777216"/>
         </border>
         <children>
-          <grid id="4cc39" binding="textDimPredial" layout-manager="GridLayoutManager" row-count="2" column-count="6" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-            <margin top="0" left="0" bottom="0" right="0"/>
+          <grid id="4cc39" binding="textDimPredial" layout-manager="GridLayoutManager" row-count="5" column-count="8" same-size-horizontally="false" same-size-vertically="false" hgap="8" vgap="12">
+            <margin top="20" left="20" bottom="20" right="20"/>
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <autoscrolls value="false"/>
-              <background color="-14474461"/>
+              <background color="-14735049"/>
+              <enabled value="true"/>
+              <font name="Dialog" size="13"/>
+              <toolTipText value=""/>
             </properties>
-            <border type="bevel-lowered" title="DIMENCIONAMENTO PREDIAL " title-justification="2">
-              <title-color color="-2521075"/>
+            <border type="line" title="DIMENSIONAMENTO PREDIAL" title-justification="2">
+              <title-color color="-1710101"/>
             </border>
             <children>
-              <component id="83d23" class="javax.swing.JButton" binding="Add">
+              <component id="f00d8" class="javax.swing.JTextField" binding="perimetro">
                 <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="5" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="1" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="80" height="-1"/>
+                  </grid>
                 </constraints>
                 <properties>
-                  <actionCommand value="Button"/>
-                  <autoscrolls value="false"/>
-                  <background color="-16711936"/>
-                  <borderPainted value="true"/>
-                  <contentAreaFilled value="true"/>
-                  <defaultCapable value="true"/>
-                  <doubleBuffered value="false"/>
+                  <background color="-15656921"/>
+                  <font name="Dialog" size="13"/>
+                  <foreground color="-1710101"/>
+                </properties>
+              </component>
+              <scrollpane id="b9927" binding="scrollPaneComodos">
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="8" vsize-policy="7" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <background color="-14735049"/>
                   <enabled value="true"/>
-                  <focusCycleRoot value="false"/>
-                  <focusPainted value="true"/>
-                  <focusTraversalPolicyProvider value="false"/>
-                  <focusable value="true"/>
-                  <font name="DejaVu Sans Mono" style="1"/>
-                  <foreground color="-16777216"/>
-                  <hideActionText value="false"/>
-                  <horizontalTextPosition value="0"/>
-                  <inheritsPopupMenu value="false"/>
-                  <label value="Adicionar"/>
-                  <name value=""/>
-                  <opaque value="true"/>
-                  <rolloverEnabled value="true"/>
-                  <selected value="false"/>
-                  <text value="Adicionar"/>
-                  <verifyInputWhenFocusTarget value="false"/>
-                  <visible value="true"/>
+                  <horizontalScrollBarPolicy value="31"/>
+                  <verticalScrollBarPolicy value="20"/>
+                </properties>
+                <border type="none"/>
+                <children>
+                  <component id="95f58" class="javax.swing.JTable" binding="comodosTable">
+                    <constraints/>
+                    <properties>
+                      <background color="-14735049"/>
+                      <enabled value="true"/>
+                      <font name="Dialog" size="14"/>
+                      <foreground color="-1710101"/>
+                      <selectionBackground color="-15763858"/>
+                      <selectionForeground color="-1710101"/>
+                    </properties>
+                  </component>
+                </children>
+              </scrollpane>
+              <component id="132ee" class="javax.swing.JTextField" binding="area">
+                <constraints>
+                  <grid row="1" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="80" height="-1"/>
+                  </grid>
+                </constraints>
+                <properties>
+                  <background color="-15656921"/>
+                  <font name="Dialog" size="13"/>
+                  <foreground color="-1710101"/>
                 </properties>
               </component>
               <component id="c04f" class="javax.swing.JComboBox" binding="Comodos">
                 <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <background color="-1"/>
+                  <background color="-15656921"/>
                   <editable value="false"/>
-                  <font name="Consolas" size="12"/>
-                  <foreground color="-16777216"/>
+                  <font name="Dialog" size="13"/>
+                  <foreground color="-1710101"/>
                   <model>
-                    <item value="Cozinha"/>
-                    <item value="Banheiro"/>
                     <item value="Sala"/>
                     <item value="Quarto"/>
+                    <item value="Cozinha"/>
+                    <item value="Banheiro"/>
+                    <item value="Lavanderia"/>
+                    <item value="Área de Serviço"/>
+                    <item value="Suíte"/>
                     <item value="Corredor"/>
                     <item value="Varanda"/>
+                    <item value="Hall"/>
                     <item value="Outros"/>
                   </model>
                 </properties>
               </component>
-              <component id="132ee" class="javax.swing.JTextField" binding="area">
+              <component id="a10de" class="javax.swing.JTextField" binding="nomeComodo">
                 <constraints>
-                  <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="-1"/>
+                  <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="80" height="-1"/>
                   </grid>
                 </constraints>
                 <properties>
-                  <background color="-16447992"/>
-                  <columns value="2"/>
-                  <doubleBuffered value="false"/>
-                  <dragEnabled value="true"/>
-                  <dropMode value="INSERT"/>
-                  <editable value="true"/>
-                  <enabled value="true"/>
-                  <focusAccelerator value="1"/>
-                  <font name="DejaVu Sans Mono"/>
-                  <foreground color="-2821"/>
-                  <horizontalAlignment value="2"/>
-                  <nextFocusableComponent value=""/>
-                  <opaque value="false"/>
-                  <selectedTextColor color="-1"/>
-                  <selectionColor color="-14474461"/>
+                  <background color="-15656921"/>
+                  <font name="Dialog" size="13"/>
+                  <foreground color="-1710101"/>
                   <text value=""/>
-                  <toolTipText value=""/>
-                  <visible value="true"/>
                 </properties>
               </component>
-              <component id="f00d8" class="javax.swing.JTextField" binding="perimetro">
+              <component id="e8f08" class="javax.swing.JLabel" binding="ComodoTXT">
                 <constraints>
-                  <grid row="0" column="4" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="-1"/>
-                  </grid>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <background color="-16447992"/>
-                  <dragEnabled value="false"/>
-                  <dropMode value="INSERT"/>
-                  <editable value="true"/>
-                  <enabled value="true"/>
-                  <foreground color="-1"/>
-                  <horizontalAlignment value="2"/>
-                  <inheritsPopupMenu value="true"/>
-                  <name value="PERIMETRO(m)"/>
-                  <nextFocusableComponent value=""/>
-                  <opaque value="false"/>
-                  <selectedTextColor color="-1"/>
-                  <selectionColor color="-14474461"/>
-                  <selectionEnd value="0"/>
-                  <selectionStart value="0"/>
-                  <text value=""/>
+                  <font name="Dialog" size="13" style="1"/>
+                  <foreground color="-6511697"/>
+                  <text value="CÔMODO:"/>
+                </properties>
+              </component>
+              <component id="97804" class="javax.swing.JLabel" binding="NomeTXT">
+                <constraints>
+                  <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <font name="Dialog" size="13" style="1"/>
+                  <foreground color="-6511697"/>
+                  <text value="NOME (opcional):"/>
                 </properties>
               </component>
               <component id="73786" class="javax.swing.JLabel" binding="TextArea">
                 <constraints>
-                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <background color="-7021569"/>
-                  <font name="DejaVu Sans Mono" style="1"/>
-                  <foreground color="-7021569"/>
-                  <text value="ÁREA: "/>
+                  <font name="Dialog" size="13" style="1"/>
+                  <foreground color="-6511697"/>
+                  <text value="ÁREA (m²):"/>
                 </properties>
               </component>
               <component id="203da" class="javax.swing.JLabel" binding="TextPer">
                 <constraints>
-                  <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <background color="-7021569"/>
-                  <font name="DejaVu Sans Mono" style="1"/>
-                  <foreground color="-7021569"/>
-                  <text value="PERIMETRO: "/>
+                  <font name="Dialog" size="13" style="1"/>
+                  <foreground color="-6511697"/>
+                  <text value="PERÍMETRO (m):"/>
+                </properties>
+              </component>
+              <component id="9fce9" class="javax.swing.JToolBar$Separator">
+                <constraints>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="79e71" class="javax.swing.JToolBar$Separator">
+                <constraints>
+                  <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="9433f" class="javax.swing.JToolBar$Separator">
+                <constraints>
+                  <grid row="1" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="83d23" class="javax.swing.JButton" binding="Add">
+                <constraints>
+                  <grid row="1" column="7" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <background color="-15763858"/>
+                  <font name="Dialog" size="13" style="1"/>
+                  <foreground color="-1710101"/>
+                  <requestFocusEnabled value="false"/>
+                  <text value="Adicionar"/>
+                </properties>
+              </component>
+              <component id="9470f" class="javax.swing.JButton" binding="ButtonCalc">
+                <constraints>
+                  <grid row="4" column="7" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <background color="-15763858"/>
+                  <enabled value="false"/>
+                  <font name="Dialog" size="13" style="1"/>
+                  <foreground color="-1710101"/>
+                  <requestFocusEnabled value="false"/>
+                  <text value="Próximo"/>
+                </properties>
+              </component>
+              <component id="remove_btn_id" class="javax.swing.JButton" binding="Remove">
+                <constraints>
+                  <grid row="4" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <background color="-4645860"/>
+                  <font name="Dialog" size="13" style="1"/>
+                  <foreground color="-1710101"/>
+                  <requestFocusEnabled value="false"/>
+                  <text value="Remover"/>
+                </properties>
+              </component>
+              <component id="resumoTomadas_id" class="javax.swing.JLabel" binding="resumoTomadas">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <font name="Dialog" size="12" style="1"/>
+                  <foreground color="-1710101"/>
+                </properties>
+              </component>
+              <component id="resumoIluminacao_id" class="javax.swing.JLabel" binding="resumoIluminacao">
+                <constraints>
+                  <grid row="3" column="3" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <font name="Dialog" size="12" style="1"/>
+                  <foreground color="-1710101"/>
+                </properties>
+              </component>
+              <component id="resumoGeral_id" class="javax.swing.JLabel" binding="resumoGeral">
+                <constraints>
+                  <grid row="3" column="6" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <font name="Dialog" size="12" style="1"/>
+                  <foreground color="-1710101"/>
                 </properties>
               </component>
             </children>
