@@ -12,14 +12,14 @@ import static servico.comodos.comodoTMDVA;
 import static servico.comodos.comodoTipo;
 import static servico.demandaEquip.demandaTab6;
 
-public final class QuadroCargasService {
+public final class quadroCargasService {
     private static final double FATOR_POTENCIA_ASSUMIDO = 1.0;
     private static final double MAX_CORRENTE_ILUMINACAO = 10.0;
     private static final double MAX_CORRENTE_TUG = 10.0;
     private static final double MAX_POTENCIA_ILUMINACAO = 1800.0;
     private static final double[] SECOES_CU_PVC_MM2 = {1.5, 2.5, 4.0, 6.0, 10.0};
     private static final String[] METODOS_REFERENCIA = {"A1", "A2", "B1", "B2", "C", "D"};
-    // Tabela 36 anexada: [método][seção][2 ou 3 condutores carregados], cobre/PVC 70 °C.
+    // Tabela 36 anexada: [seção][2 ou 3 condutores carregados], cobre/PVC 70 °C.
     private static final double[][][] CORRENTES_TABELA_36 = {
             {{14.0, 13.5}, {19.5, 18.0}, {26.0, 24.0}, {34.0, 31.0}, {46.0, 42.0}},
             {{14.0, 13.0}, {18.5, 17.5}, {25.0, 23.0}, {32.0, 29.0}, {43.0, 39.0}},
@@ -29,7 +29,7 @@ public final class QuadroCargasService {
             {{22.0, 18.0}, {29.0, 24.0}, {38.0, 31.0}, {47.0, 39.0}, {63.0, 52.0}}
     };
 
-    private QuadroCargasService() {
+    private quadroCargasService() {
     }
 
     public enum SistemaFases {
@@ -160,6 +160,10 @@ public final class QuadroCargasService {
         public double getPotenciaDemanda() {
             return potenciaDemanda;
         }
+
+        public ParametrosCircuito getParametros() {
+            return parametros;
+        }
     }
 
     public static final class Resultado {
@@ -214,11 +218,6 @@ public final class QuadroCargasService {
             this.potenciaDemanda = potenciaDemanda;
             this.drObrigatorio = drObrigatorio;
         }
-    }
-
-    public static Resultado calcular(int tensao, List<demandaEquip.CargaEspecial> equipamentos) {
-        return calcular(tensao, SistemaFases.MONOFASICO, equipamentos,
-                new LinkedHashMap<String, ParametrosCircuito>());
     }
 
     public static Resultado calcular(int tensao, SistemaFases sistema,
@@ -312,12 +311,28 @@ public final class QuadroCargasService {
         if (potencia <= 0) {
             return;
         }
+        double divisor = 1;
+        double potenciaPorCircuito = potencia / divisor;
+
+        while (potenciaPorCircuito > limite) {
+            divisor++;
+            potenciaPorCircuito = potencia / divisor;
+        }
+
         int numero = 1;
         double restante = potencia;
-        while (restante > 0) {
-            double trecho = Math.min(restante, limite);
-            circuitos.add(new CircuitoRascunho("Iluminação social/serviço " + numero++,
-                    "Iluminação", trecho, trecho, false));
+
+        while (restante > 0.01) {
+            double trecho = Math.min(restante, potenciaPorCircuito);
+
+            circuitos.add(new CircuitoRascunho(
+                    "Iluminação " + numero++,
+                    "Iluminação",
+                    trecho,
+                    trecho,
+                    false
+            ));
+
             restante -= trecho;
         }
     }
@@ -327,49 +342,67 @@ public final class QuadroCargasService {
         double limite = tensao * MAX_CORRENTE_TUG;
         List<String> locais = new ArrayList<>(cargas.keySet());
         locais.sort(Comparator.naturalOrder());
+
+        // CASO 1: Tomadas especiais (Trata cada local individualmente dividindo em partes iguais)
         if (especiais) {
             for (String local : locais) {
-                dividirCargaEmCircuitos("TUG " + local, cargas.get(local), limite, circuitos);
+                double cargaLocal = cargas.get(local);
+                if (cargaLocal <= 0) continue;
+
+                // Calcula o divisor ideal para este local
+                double divisor = 1;
+                double cargaPorCircuito = cargaLocal / divisor;
+                while (cargaPorCircuito > limite) {
+                    divisor++;
+                    cargaPorCircuito = cargaLocal / divisor;
+                }
+
+                // Cria os circuitos iguais para o local
+                int numeroEspecial = 1;
+                double restanteLocal = cargaLocal;
+                while (restanteLocal > 0.01) {
+                    double trecho = Math.min(restanteLocal, cargaPorCircuito);
+                    circuitos.add(new CircuitoRascunho(
+                            "TUG " + local + " " + numeroEspecial++,
+                            "TUG", trecho, trecho, false));
+                    restanteLocal -= trecho;
+                }
             }
             return;
         }
 
-        double acumulada = 0;
-        List<String> locaisNoCircuito = new ArrayList<>();
-        int numero = 1;
+        // CASO 2: Tomadas normais (Agrupadas e divididas igualmente)
+        double cargaTotalGeral = 0;
         for (String local : locais) {
-            double restante = cargas.get(local);
-            while (restante > 0) {
-                double disponivel = limite - acumulada;
-                if (disponivel <= 0) {
-                    circuitos.add(new CircuitoRascunho(
-                            "TUG demais cômodos " + numero++ + " (" + String.join(", ", locaisNoCircuito) + ")",
-                            "TUG", acumulada, acumulada, false));
-                    acumulada = 0;
-                    locaisNoCircuito.clear();
-                    disponivel = limite;
-                }
-                double trecho = Math.min(restante, disponivel);
-                acumulada += trecho;
-                restante -= trecho;
-                if (!locaisNoCircuito.contains(local)) {
-                    locaisNoCircuito.add(local);
-                }
-                if (restante > 0 || acumulada >= limite) {
-                    circuitos.add(new CircuitoRascunho(
-                            "TUG demais cômodos " + numero++ + " (" + String.join(", ", locaisNoCircuito) + ")",
-                            "TUG", acumulada, acumulada, false));
-                    acumulada = 0;
-                    locaisNoCircuito.clear();
-                }
-            }
+            cargaTotalGeral += cargas.get(local);
         }
-        if (acumulada > 0) {
+
+        if (cargaTotalGeral <= 0) {
+            return;
+        }
+
+        // Calcula o divisor ideal baseado na carga total de todos os cômodos
+        double divisorGeral = 1;
+        double cargaPorCircuitoGeral = cargaTotalGeral / divisorGeral;
+        while (cargaPorCircuitoGeral > limite) {
+            divisorGeral++;
+            cargaPorCircuitoGeral = cargaTotalGeral / divisorGeral;
+        }
+
+        // Cria a lista com os nomes de todos os cômodos envolvidos para colocar no nome do circuito
+        String descricaoLocais = String.join(", ", locais);
+
+        int numeroGeral = 1;
+        double restanteGeral = cargaTotalGeral;
+        while (restanteGeral > 0.01) {
+            double trecho = Math.min(restanteGeral, cargaPorCircuitoGeral);
             circuitos.add(new CircuitoRascunho(
-                    "TUG demais cômodos " + numero + " (" + String.join(", ", locaisNoCircuito) + ")",
-                    "TUG", acumulada, acumulada, false));
+                    "TUG demais cômodos " + numeroGeral++ + " (" + descricaoLocais + ")",
+                    "TUG", trecho, trecho, false));
+            restanteGeral -= trecho;
         }
     }
+
 
     private static void dividirCargaEmCircuitos(String descricao, double potencia, double limite,
                                                 List<CircuitoRascunho> circuitos) {

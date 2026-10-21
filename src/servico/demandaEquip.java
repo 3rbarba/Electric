@@ -44,12 +44,15 @@ public class demandaEquip {
 
     public static final class CargaEspecial {
         private final String nome;
+        private final int tabela;
         private final long potenciaInstalada;
         private final int indiceNaLista;
         private final int potenciaCorrigida;
 
-        private CargaEspecial(String nome, long potenciaInstalada, int indiceNaLista, int potenciaCorrigida) {
+        private CargaEspecial(String nome, int tabela, long potenciaInstalada,
+                              int indiceNaLista, int potenciaCorrigida) {
             this.nome = nome;
+            this.tabela = tabela;
             this.potenciaInstalada = potenciaInstalada;
             this.indiceNaLista = indiceNaLista;
             this.potenciaCorrigida = potenciaCorrigida;
@@ -57,6 +60,10 @@ public class demandaEquip {
 
         public String getNome() {
             return nome;
+        }
+
+        public int getTabela() {
+            return tabela;
         }
 
         public long getPotenciaInstalada() {
@@ -191,6 +198,22 @@ public class demandaEquip {
         reconstruirTabelaEquipamentos(modeloEquipamentos);
     }
 
+    public static void importarCarga(DefaultTableModel modeloEquipamentos, int tabela,
+                                     String nome, long potenciaInstalada) {
+        if (potenciaInstalada <= 0) {
+            throw new IllegalArgumentException("A potência do equipamento deve ser maior que zero.");
+        }
+        if (tabela != 7 && tabela != 8 && tabela != 9 && tabela != 10 && tabela != 11 && tabela != 16) {
+            throw new IllegalArgumentException("Tabela de demanda não suportada: " + tabela);
+        }
+        Map<Integer, ResumoTabela> resumos = resumosPorTabela.computeIfAbsent(
+                modeloEquipamentos, key -> new HashMap<Integer, ResumoTabela>());
+        ResumoTabela resumo = resumos.computeIfAbsent(tabela, key -> new ResumoTabela());
+        String nomeUnico = nomeUnico(nome, resumos);
+        resumo.equipamentos.add(new EquipamentoAdicionado(nomeUnico, potenciaInstalada, -1));
+        reconstruirTabelaEquipamentos(modeloEquipamentos);
+    }
+
     public static void calcEquip(JComboBox<String> selecEquip, DefaultTableModel modeloEquipamentos,
                                  JTextField txtNomeEquipamento, JTextField txtPotenciaTotal, String potStr) {
         if (selecEquip.getSelectedItem() == null) {
@@ -245,9 +268,10 @@ public class demandaEquip {
         if (resumos == null) {
             return cargas;
         }
-        for (ResumoTabela resumo : resumos.values()) {
+        for (Map.Entry<Integer, ResumoTabela> entrada : resumos.entrySet()) {
+            ResumoTabela resumo = entrada.getValue();
             for (EquipamentoAdicionado item : resumo.equipamentos) {
-                cargas.add(new CargaEspecial(item.nome, item.potenciaInstalada,
+                cargas.add(new CargaEspecial(item.nome, entrada.getKey(), item.potenciaInstalada,
                         item.indiceNaLista, item.potenciaCorrigida));
             }
         }

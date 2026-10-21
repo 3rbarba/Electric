@@ -1,10 +1,17 @@
 package screen;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.net.URL;
+import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import servico.importar;
 import static servico.comodos.*;
 import static servico.demandaEquip.*;
 
@@ -14,6 +21,7 @@ public class mainScreen {
     private JScrollPane scrollPaneComodos;
     private JComboBox<String> Comodos;
     private JButton Add;
+    private JButton importarComodos;
     private JButton Remove;
     private JTextField area;
     private JTextField perimetro;
@@ -30,6 +38,7 @@ public class mainScreen {
 
     private final DefaultTableModel tableModelComodos;
     private final ImageIcon icon;
+    private importar.ProjetoImportado projetoImportado;
 
     public mainScreen() {
         if (main == null) {
@@ -80,6 +89,7 @@ public class mainScreen {
         area = new JTextField(8);
         perimetro = new JTextField(8);
         Add = new JButton("Adicionar");
+        importarComodos = new JButton("Importar TXT/CSV");
         Remove = new JButton("Remover");
         ButtonCalc = new JButton("Próximo");
         scrollPaneComodos = new JScrollPane();
@@ -111,6 +121,8 @@ public class mainScreen {
         c.gridx = 4;
         c.weightx = 0;
         campos.add(Add, c);
+        c.gridx = 5;
+        campos.add(importarComodos, c);
         textDimPredial.add(campos, java.awt.BorderLayout.NORTH);
 
         scrollPaneComodos.setViewportView(comodosTable);
@@ -126,6 +138,7 @@ public class mainScreen {
         JPanel botoes = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 8, 2));
         botoes.setOpaque(false);
         botoes.add(Remove);
+        botoes.add(importarComodos);
         botoes.add(ButtonCalc);
         rodape.add(totais, java.awt.BorderLayout.CENTER);
         rodape.add(botoes, java.awt.BorderLayout.EAST);
@@ -136,7 +149,7 @@ public class mainScreen {
                 resumoTomadas, resumoIluminacao, resumoGeral}) {
             label.setForeground(texto);
         }
-        for (JButton button : new JButton[]{Add, ButtonCalc}) {
+        for (JButton button : new JButton[]{Add, ButtonCalc, importarComodos}) {
             button.setBackground(destaque);
             button.setForeground(texto);
             button.setFont(button.getFont().deriveFont(java.awt.Font.BOLD, 13f));
@@ -160,6 +173,89 @@ public class mainScreen {
         c.gridx = coluna;
         c.weightx = componente instanceof JTextField || componente instanceof JComboBox ? 1 : 0;
         painel.add(componente, c);
+    }
+
+    private void importarComodosCsv() {
+        JFileChooser seletor = new JFileChooser();
+        seletor.setDialogTitle("Importar memorial TXT ou cômodos CSV");
+        seletor.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                "Memorial ou planilha (*.txt, *.csv)", "txt", "csv"));
+        if (seletor.showOpenDialog(main) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        try {
+            importar.ProjetoImportado importado = importar.lerProjeto(
+                    seletor.getSelectedFile().toPath(), obterTiposValidos());
+            if (importado.getComodos().isEmpty()) {
+                throw new IllegalArgumentException("O arquivo não contém cômodos para importar.");
+            }
+            if (importado.isMemorial()) {
+                limparComodos();
+            }
+            for (importar.ComodoImportado comodo : importado.getComodos()) {
+                adicionarComodoImportado(comodo);
+            }
+            projetoImportado = importado.isMemorial() ? importado : null;
+            ButtonCalc.setEnabled(true);
+            atualizarResumoComodos();
+            String mensagem = importado.isMemorial()
+                    ? importado.getComodos().size() + " cômodo(s) e "
+                    + importado.getEquipamentos().size() + " equipamento(s) importados."
+                    : importado.getComodos().size() + " cômodo(s) importados.";
+            if (importado.isFormatoAntigo()) {
+                mensagem += "\nMemorial antigo: FCA, FCT e método por circuito não estavam salvos; "
+                        + "serão usados os valores padrão.";
+            }
+            JOptionPane.showMessageDialog(main, mensagem,
+                    "Importação concluída", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException | IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(main, ex.getMessage(),
+                    "Não foi possível importar os cômodos", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void limparComodos() {
+        tableModelComodos.setRowCount(0);
+        comodoArea.clear();
+        comodoPerimetro.clear();
+        comodoTipo.clear();
+        comodoTMDVA.clear();
+        comodoILUVA.clear();
+    }
+
+    private List<String> obterTiposValidos() {
+        List<String> tipos = new ArrayList<>();
+        for (int i = 0; i < Comodos.getItemCount(); i++) {
+            tipos.add(Comodos.getItemAt(i));
+        }
+        return tipos;
+    }
+
+    private void adicionarComodoImportado(importar.ComodoImportado importado) {
+        String nomeBase = importado.getNome().isEmpty() ? importado.getTipo() : importado.getNome();
+        if (!normalizar(nomeBase).startsWith(normalizar(importado.getTipo()))) {
+            nomeBase = importado.getTipo() + " " + nomeBase;
+        }
+        String nomeFinal = nomeBase;
+        Set<String> nomesExistentes = new HashSet<>(comodoArea.keySet());
+        int numero = 1;
+        while (nomesExistentes.contains(nomeFinal)) {
+            nomeFinal = nomeBase + " " + numero++;
+        }
+
+        comodoPerimetro.put(nomeFinal, importado.getPerimetro());
+        comodoArea.put(nomeFinal, importado.getArea());
+        comodoTipo.put(nomeFinal, importado.getTipo());
+        comodoTMDVA.remove(nomeFinal);
+        comodoILUVA.remove(nomeFinal);
+        tableModelComodos.addRow(new Object[]{nomeFinal, importado.getArea(), importado.getPerimetro()});
+    }
+
+    private static String normalizar(String texto) {
+        return Normalizer.normalize(texto.trim().toLowerCase(Locale.ROOT), Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .replaceAll("[^a-z0-9]", "");
     }
 
     private void prepararTabelaComodos() {
@@ -195,7 +291,7 @@ public class mainScreen {
                 }
                 atualizarResumoComodos();
                 JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(main);
-                equipamentosScreen eqScreen = new equipamentosScreen(frame, main);
+                equipamentosScreen eqScreen = new equipamentosScreen(frame, main, projetoImportado);
                 int potTotal = (int) PotenciaTugIlu();
                 double potCorr = potTotal * demandaTab6(potTotal);
                 itemText("Tomada e Iluminação", 1, potTotal, (int) potCorr, eqScreen.modeloEquipamentos);
@@ -266,6 +362,9 @@ public class mainScreen {
                     JOptionPane.showMessageDialog(null, "Digite um número válido.");
                 }
             });
+        }
+        if (importarComodos != null) {
+            importarComodos.addActionListener(e -> importarComodosCsv());
         }
         // Botão remover
         if (Remove != null) {
