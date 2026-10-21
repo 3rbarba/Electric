@@ -57,8 +57,8 @@ public class mainScreen {
         area.setCaretColor(area.getForeground());
         perimetro.setCaretColor(perimetro.getForeground());
         nomeComodo.setCaretColor(nomeComodo.getForeground());
-        DarkScrollBarUI.install(scrollPaneComodos);
-        DarkScrollBarUI.install(Comodos);
+        darkScrollBarUI.install(scrollPaneComodos);
+        darkScrollBarUI.install(Comodos);
 
         URL iconUrl = mainScreen.class.getResource("/icons/main.png");
         icon = iconUrl == null ? null : new ImageIcon(iconUrl);
