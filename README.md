@@ -5,6 +5,8 @@ Aplicativo desktop desenvolvido em Java Swing para registrar cômodos e equipame
 ## Funcionalidades
 
 - Cadastro de cômodos com nome, área e perímetro.
+- Importação de memoriais TXT exportados pelo programa, incluindo cômodos, equipamentos e configurações elétricas.
+- Importação de cômodos a partir de arquivos CSV, com separador vírgula ou ponto e vírgula.
 - Estimativa de cargas de tomadas de uso geral (TUG) e iluminação.
 - Cadastro de equipamentos especiais (TUE), com cálculo de demanda conforme as tabelas implementadas no projeto.
 - Geração do quadro de cargas com circuito, descrição, tipo, tensão, potência instalada, correntes de projeto e corrigida, ampacidade, disjuntor, seção do condutor, indicação de DR e fase.
@@ -55,9 +57,25 @@ src/
 └── servico/
     ├── comodos.java
     ├── demandaEquip.java
+    ├── Importar.java
     ├── potenciaCorrigida.java
     └── QuadroCargasService.java
 ```
+
+## Importar um projeto ou cômodos por CSV
+
+Na primeira tela, clique em **Importar TXT/CSV**. Um memorial TXT exportado pelo programa restaura cômodos, equipamentos especiais, sistema, tensão e configurações FCA/FCT/método dos circuitos. Os arquivos TXT antigos também são aceitos; como eles não guardavam as configurações por circuito, esses valores serão reiniciados para o padrão.
+
+Para importar apenas cômodos, selecione um CSV UTF-8. O formato recomendado usa cabeçalho e separador ponto e vírgula:
+
+```csv
+Tipo;Nome;Área (m²);Perímetro (m)
+Sala;Estar;20,5;18
+Quarto;Suíte principal;14;15,2
+Cozinha;Principal;12;14
+```
+
+Os nomes das colunas podem ser omitidos se os dados estiverem na ordem `Tipo;Nome;Área;Perímetro`. Tipos aceitos: Sala, Quarto, Cozinha, Banheiro, Lavanderia, Área de Serviço, Suíte, Corredor, Varanda, Hall e Outros. Área e perímetro devem ser números não negativos. Os cômodos CSV são adicionados à lista atual; nomes repetidos recebem um sufixo numérico. Importar um memorial substitui os dados atuais do projeto.
 
 ## Observações sobre os cálculos
 

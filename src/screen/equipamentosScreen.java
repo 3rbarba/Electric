@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.util.HashMap;
 import java.util.Map;
+import servico.Importar;
 import servico.QuadroCargasService;
 import static servico.demandaEquip.calcEquip;
 import static servico.demandaEquip.removerEquipamentosSelecionados;
@@ -26,8 +27,14 @@ public class equipamentosScreen {
     private final JFrame framePrincipal;
     private final JPanel painelAnterior;
     private final Map<String, QuadroCargasService.ParametrosCircuito> parametrosPorCircuito = new HashMap<>();
+    private QuadroCargasService.SistemaFases sistemaInicial = QuadroCargasService.SistemaFases.MONOFASICO;
+    private int tensaoInicial = 127;
 
     public equipamentosScreen(JFrame frame, JPanel painelAnterior) {
+        this(frame, painelAnterior, null);
+    }
+
+    public equipamentosScreen(JFrame frame, JPanel painelAnterior, Importar.ProjetoImportado projetoImportado) {
         this.framePrincipal = frame;
         this.painelAnterior = painelAnterior;
         if (main == null) {
@@ -42,6 +49,15 @@ public class equipamentosScreen {
             }
         };
         tabelaEquipamentos.setModel(modeloEquipamentos);
+        if (projetoImportado != null && projetoImportado.isMemorial()) {
+            parametrosPorCircuito.putAll(projetoImportado.getParametrosPorCircuito());
+            sistemaInicial = projetoImportado.getSistema();
+            tensaoInicial = projetoImportado.getTensao();
+            for (Importar.EquipamentoImportado equipamento : projetoImportado.getEquipamentos()) {
+                servico.demandaEquip.importarCarga(modeloEquipamentos, equipamento.getTabela(),
+                        equipamento.getNome(), equipamento.getPotenciaInstalada());
+            }
+        }
         prepararTabelaEquipamentos();
         txtNomeEquipamento.setCaretColor(txtNomeEquipamento.getForeground());
         txtPotenciaTotal.setCaretColor(txtPotenciaTotal.getForeground());
@@ -208,7 +224,8 @@ public class equipamentosScreen {
                 return;
             }
             circuitosScreen proximaTela = new circuitosScreen(
-                    framePrincipal, main, modeloEquipamentos, parametrosPorCircuito);
+                    framePrincipal, main, modeloEquipamentos, parametrosPorCircuito,
+                    sistemaInicial, tensaoInicial);
             framePrincipal.setContentPane(proximaTela.getMain());
             framePrincipal.revalidate();
             framePrincipal.repaint();

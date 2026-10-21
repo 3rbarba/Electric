@@ -4,16 +4,23 @@ import servico.QuadroCargasService;
 import servico.comodos;
 import servico.demandaEquip;
 
+import javax.print.PrintService;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.standard.JobName;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.print.PrinterJob;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Base64;
 import java.util.TreeSet;
 
 public class circuitosScreen {
@@ -45,15 +52,19 @@ public class circuitosScreen {
     private JButton btnAnterior;
     private JButton btnExportar;
     private JButton btnImprimir;
-//
-//    private JLabel resumoDemanda;
-//    private JLabel resumoEntrada;
     private JLabel legenda;
     private final Map<String, QuadroCargasService.ParametrosCircuito> parametrosPorCircuito;
     private QuadroCargasService.Resultado resultado;
 
     public circuitosScreen(JFrame frame, JPanel painelAnterior, DefaultTableModel equipamentos,
                            Map<String, QuadroCargasService.ParametrosCircuito> parametrosPorCircuito) {
+        this(frame, painelAnterior, equipamentos, parametrosPorCircuito,
+                QuadroCargasService.SistemaFases.MONOFASICO, 127);
+    }
+
+    public circuitosScreen(JFrame frame, JPanel painelAnterior, DefaultTableModel equipamentos,
+                           Map<String, QuadroCargasService.ParametrosCircuito> parametrosPorCircuito,
+                           QuadroCargasService.SistemaFases sistemaInicial, int tensaoInicial) {
         this.equipamentos = equipamentos;
         this.parametrosPorCircuito = parametrosPorCircuito;
         if (main == null) {
@@ -67,9 +78,9 @@ public class circuitosScreen {
         };
         tabela.setModel(modeloTabela);
         comboTensao.setModel(new DefaultComboBoxModel<>(new Integer[]{127, 220}));
-        comboTensao.setSelectedItem(127);
+        comboTensao.setSelectedItem(tensaoInicial);
         comboSistema.setModel(new DefaultComboBoxModel<>(QuadroCargasService.SistemaFases.values()));
-        comboSistema.setSelectedItem(QuadroCargasService.SistemaFases.MONOFASICO);
+        comboSistema.setSelectedItem(sistemaInicial);
         comboMetodo.setModel(new DefaultComboBoxModel<>(METODOS));
         comboMetodo.setSelectedItem("B1");
         prepararControle(comboTensao);
@@ -273,7 +284,8 @@ public class circuitosScreen {
     }
 
     private String montarMemorial() {
-        StringBuilder texto = new StringBuilder("MEMORIAL - QUADRO DE CARGAS E DIVISÃO DE CIRCUITOS\n\n");
+        StringBuilder texto = montarBlocoImportacao();
+        texto.append("MEMORIAL - QUADRO DE CARGAS E DIVISÃO DE CIRCUITOS\n\n");
         texto.append("Sistema: ").append(comboSistema.getSelectedItem())
                 .append(" | Tensão nominal: ").append(comboTensao.getSelectedItem()).append(" V\n")
                 .append("Ampacidade Iz: referência da Tabela 36 (cobre/PVC 70 °C); validar edição vigente da NBR 5410 e instalação real.\n\n");
@@ -319,13 +331,59 @@ public class circuitosScreen {
         return texto.toString();
     }
 
+    private StringBuilder montarBlocoImportacao() {
+        StringBuilder bloco = new StringBuilder("# DADOS_ELETRIC;1\n");
+        bloco.append("SISTEMA;")
+                .append(((QuadroCargasService.SistemaFases) comboSistema.getSelectedItem()).name())
+                .append(';').append(comboTensao.getSelectedItem()).append('\n');
+        for (String nome : new TreeSet<>(comodos.comodoArea.keySet())) {
+            bloco.append("COMODO;").append(codificar(nome)).append(';')
+                    .append(codificar(comodos.comodoTipo.getOrDefault(nome, ""))).append(';')
+                    .append(String.format(Locale.ROOT, "%.10f",
+                            comodos.comodoArea.getOrDefault(nome, 0.0))).append(';')
+                    .append(String.format(Locale.ROOT, "%.10f",
+                            comodos.comodoPerimetro.getOrDefault(nome, 0.0))).append('\n');
+        }
+        for (demandaEquip.CargaEspecial carga : demandaEquip.obterCargasEspeciais(equipamentos)) {
+            bloco.append("EQUIPAMENTO;").append(carga.getTabela()).append(';')
+                    .append(codificar(carga.getNome())).append(';')
+                    .append(carga.getPotenciaInstalada()).append('\n');
+        }
+        for (QuadroCargasService.Circuito circuito : resultado.getCircuitos()) {
+            QuadroCargasService.ParametrosCircuito parametros = circuito.getParametros();
+            bloco.append("CIRCUITO;").append(codificar(circuito.getChaveConfiguracao())).append(';')
+                    .append(parametros.getMetodoInstalacao()).append(';')
+                    .append(parametros.getCondutoresCarregados()).append(';')
+                    .append(String.format(Locale.ROOT, "%.10f", parametros.getFca())).append(';')
+                    .append(String.format(Locale.ROOT, "%.10f", parametros.getFct())).append('\n');
+        }
+        return bloco.append("# FIM_DADOS_ELETRIC\n\n");
+    }
+
+    private static String codificar(String valor) {
+        return Base64.getEncoder().encodeToString(valor.getBytes(StandardCharsets.UTF_8));
+    }
+
     private void imprimirTabela() {
         try {
             JEditorPane memorial = new JEditorPane("text/html", montarMemorialHtml());
             memorial.setEditable(false);
+
+            // Define o nome do trabalho (JobName) através dos atributos de impressão
+            PrintRequestAttributeSet atributos = new HashPrintRequestAttributeSet();
+
+            atributos.add(new JobName("Memorial de Cálculo - Quadro de Cargas", Locale.forLanguageTag("pt-BR")));
+
+            // Executa a impressão passando os atributos corretos
             boolean impresso = memorial.print(
-                    new java.text.MessageFormat("Memorial - Quadro de Cargas"),
-                    new java.text.MessageFormat("Página {0}"));
+                    new MessageFormat("Memorial - Quadro de Cargas"),
+                    new MessageFormat(""),
+                    false,
+                    null,
+                    atributos,
+                    true
+            );
+
             if (impresso) {
                 JOptionPane.showMessageDialog(main, "Memorial completo enviado para impressão.");
             }
@@ -349,9 +407,11 @@ public class circuitosScreen {
                 .append(" | Tensão nominal: ").append(htmlEscape(String.valueOf(comboTensao.getSelectedItem())))
                 .append(" V<br>Ampacidade de referência: Tabela 36 (cobre/PVC 70 °C).</p>");
 
-        html.append("<h2>Cômodos, áreas e cargas</h2><table><thead><tr>")
+        html.append("<h2>Cômodos, Áreas e Cargas</h2>")
+                .append("<table><thead><tr>")
                 .append("<th>Cômodo</th><th>Tipo</th><th>Área (m²)</th><th>Perímetro (m)</th>")
-                .append("<th>Tomadas (VA)</th><th>Iluminação (VA)</th></tr></thead><tbody>");
+                .append("<th>Tomadas (VA)</th><th>Iluminação (VA)</th>")
+                .append("</tr></thead><tbody>");
         for (String nome : new TreeSet<>(comodos.comodoArea.keySet())) {
             html.append("<tr><td>").append(htmlEscape(nome)).append("</td><td>")
                     .append(htmlEscape(comodos.comodoTipo.getOrDefault(nome, ""))).append("</td><td class='num'>")
@@ -367,9 +427,10 @@ public class circuitosScreen {
                 .append(comodos.somarTomadas() + comodos.somarIluminacao()).append(" VA</th></tr>")
                 .append("</tbody></table>");
 
-        html.append("<h2>Equipamentos especiais (TUE)</h2><table><thead><tr>")
-                .append("<th>Equipamento</th><th>Potência instalada (W/VA)</th>")
-                .append("<th>Potência considerada na demanda (W/VA)</th></tr></thead><tbody>");
+        html.append("<h2>Equipamentos Especiais (TUE)</h2>")
+                .append("<table><thead><tr>")
+                .append("<th>Equipamento</th><th>Pot. Inst. (W/VA)</th><th>Pot. Corrigida (W/VA)</th>")
+                .append("</tr></thead><tbody>");
         List<demandaEquip.CargaEspecial> cargas = demandaEquip.obterCargasEspeciais(equipamentos);
         for (demandaEquip.CargaEspecial carga : cargas) {
             html.append("<tr><td>").append(htmlEscape(carga.getNome())).append("</td><td class='num'>")
@@ -381,10 +442,12 @@ public class circuitosScreen {
         }
         html.append("</tbody></table>");
 
-        html.append("<h2>Divisão de circuitos</h2><table><thead><tr>");
+        html.append("<h2>Divisão de Circuitos e Quadro de Cargas</h2>")
+                .append("<table><thead><tr>");
         for (String coluna : COLUNAS) {
             html.append("<th>").append(htmlEscape(coluna)).append("</th>");
         }
+        html.append("</tr></thead><tbody>");
         html.append("</tr></thead><tbody>");
         for (int linha = 0; linha < modeloTabela.getRowCount(); linha++) {
             html.append("<tr>");
