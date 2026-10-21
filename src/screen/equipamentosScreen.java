@@ -63,8 +63,8 @@ public class equipamentosScreen {
         txtPotenciaTotal.setCaretColor(txtPotenciaTotal.getForeground());
         atualizarRotuloPotencia();
         comboTipoEquipamento.addActionListener(e -> atualizarRotuloPotencia());
-        DarkScrollBarUI.install(scrollPaneEquipamentos);
-        DarkScrollBarUI.install(comboTipoEquipamento);
+        darkScrollBarUI.install(scrollPaneEquipamentos);
+        darkScrollBarUI.install(comboTipoEquipamento);
         initListeners();
     }
 

@@ -113,7 +113,7 @@ public class circuitosScreen {
         }
         scrollTabela.getViewport().setBackground(PAINEL);
         scrollTabela.setBorder(BorderFactory.createLineBorder(new Color(70, 91, 99)));
-        DarkScrollBarUI.install(scrollTabela);
+        darkScrollBarUI.install(scrollTabela);
         panelQuadro.setBackground(PAINEL);
         panelConfiguracao.setOpaque(false);
         panelSeletores.setOpaque(false);

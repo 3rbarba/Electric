@@ -20,12 +20,12 @@ import java.awt.Window;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
-public final class DarkScrollBarUI extends BasicScrollBarUI {
+public final class darkScrollBarUI extends BasicScrollBarUI {
     private static final Color TRACK_COLOR = new Color(17, 24, 39);
     private static final Color THUMB_COLOR = new Color(71, 85, 105);
     private static final Color THUMB_HOVER_COLOR = new Color(20, 184, 166);
 
-    private DarkScrollBarUI() {
+    private darkScrollBarUI() {
     }
 
     public static void install(JScrollPane scrollPane) {
@@ -53,10 +53,10 @@ public final class DarkScrollBarUI extends BasicScrollBarUI {
     }
 
     private static void install(JScrollBar scrollBar) {
-        if (scrollBar == null || scrollBar.getUI() instanceof DarkScrollBarUI) {
+        if (scrollBar == null || scrollBar.getUI() instanceof darkScrollBarUI) {
             return;
         }
-        scrollBar.setUI(new DarkScrollBarUI());
+        scrollBar.setUI(new darkScrollBarUI());
         scrollBar.setOpaque(false);
     }
 

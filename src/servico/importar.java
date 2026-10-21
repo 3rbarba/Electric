@@ -13,11 +13,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import servico.quadroCargasService.ParametrosCircuito;
-import servico.quadroCargasService.SistemaFases;
+import servico.QuadroCargasService.ParametrosCircuito;
+import servico.QuadroCargasService.SistemaFases;
 
-public final class importar {
-    private importar() {
+public final class Importar {
+    private Importar() {
     }
 
     public static List<ComodoImportado> lerComodosCsv(Path arquivo, List<String> tiposValidos)
