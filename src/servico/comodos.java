@@ -9,6 +9,7 @@ import static java.lang.System.out;
 
 public class comodos {
     public static HashMap<String, Integer> comodoTMDVA = new HashMap<>();
+    public static HashMap<String, Integer> comodoQtdTomadas = new HashMap<>();
     public static HashMap<String, Integer> comodoILUVA = new HashMap<>();
     public static HashMap<String, Double> comodoPerimetro = new HashMap<>();
     public static HashMap<String, Double> comodoArea = new HashMap<>();
@@ -16,6 +17,10 @@ public class comodos {
 
     public static long somarTomadas() {
         return comodoTMDVA.values().stream().mapToLong(Integer::longValue).sum();
+    }
+
+    public static int somarQuantidadeTomadas() {
+        return comodoQtdTomadas.values().stream().mapToInt(Integer::intValue).sum();
     }
 
     public static long somarIluminacao() {
@@ -29,6 +34,7 @@ public class comodos {
             return false;
         }
         comodoTMDVA.clear();
+        comodoQtdTomadas.clear();
         comodoILUVA.clear();
 
         for (int i = 0; i < model.getRowCount(); i++) {
@@ -44,6 +50,7 @@ public class comodos {
                 case "sala":
                 case "quarto":
                     comodoTMDVA.put(nomeOriginal, calcSalaQuarto(area, perimetro, tipoComodo));
+                    comodoQtdTomadas.put(nomeOriginal, calcQuantidadeSalaQuarto(area, perimetro));
                     comodoILUVA.put(nomeOriginal, calcIlum(area));
                     break;
                 //areas molhadas
@@ -53,6 +60,7 @@ public class comodos {
                 case "área de serviço":
                 case "suíte":
                     comodoTMDVA.put(nomeOriginal, calcAreaMolhada(perimetro, tipoComodo));
+                    comodoQtdTomadas.put(nomeOriginal, calcQuantidadeAreaMolhada(perimetro, tipoComodo));
                     comodoILUVA.put(nomeOriginal, calcIlum(area));
                     break;
                 //outros comodos
@@ -61,11 +69,13 @@ public class comodos {
                 case "hall":
                 case "outros":
                     comodoTMDVA.put(nomeOriginal, calcOutrosComodos(area, perimetro, tipoComodo));
+                    comodoQtdTomadas.put(nomeOriginal, calcQuantidadeOutrosComodos(area, perimetro, tipoComodo));
                     comodoILUVA.put(nomeOriginal, calcIlum(area));
                     break;
                 default:
                     JOptionPane.showMessageDialog(null, "Cômodo não reconhecido: " + nomeOriginal);
                     comodoTMDVA.clear();
+                    comodoQtdTomadas.clear();
                     comodoILUVA.clear();
                     return false;
             }
@@ -105,7 +115,15 @@ public class comodos {
         }
         return potenciaTMDS;
     }
-    public static int calcOutrosComodos(double area, double perimetro, java.lang.String comodo) {
+
+    public static int calcQuantidadeAreaMolhada(double perimetro, String comodo) {
+        if (comodo.contains("banheiro")) {
+            return 1;
+        }
+        return (int) Math.ceil(perimetro / 3.5);
+    }
+
+    public static int calcOutrosComodos(double area, double perimetro, String comodo) {
         int quantidadeTMDS = 1;
         int potenciaTotalVA = 100;
         if (!comodo.contains("varanda")) {
@@ -116,7 +134,18 @@ public class comodos {
         }
         return potenciaTotalVA;
     }
-    public static int calcSalaQuarto(double area, double perimetro, java.lang.String comodo) {
+
+    public static int calcQuantidadeOutrosComodos(double area, double perimetro, String comodo) {
+        int quantidadeTMDS = 1;
+        if (!comodo.contains("varanda")) {
+            if (area >= 6) {
+                quantidadeTMDS = (int) Math.ceil(perimetro / 5);
+            }
+        }
+        return quantidadeTMDS;
+    }
+
+    public static int calcSalaQuarto(double area, double perimetro, String comodo) {
         int quantidadeTMDS = 1;
         if (area >= 5) {
             quantidadeTMDS = (int) Math.ceil(perimetro / 5);
@@ -124,6 +153,15 @@ public class comodos {
         int potenciaTotalVA = quantidadeTMDS * 100;
         return potenciaTotalVA;
     }
+
+    public static int calcQuantidadeSalaQuarto(double area, double perimetro) {
+        int quantidadeTMDS = 1;
+        if (area >= 5) {
+            quantidadeTMDS = (int) Math.ceil(perimetro / 5);
+        }
+        return quantidadeTMDS;
+    }
+
     public static int calcIlum(double area) {
         int quantidadeILUVA = 1;
         int potenciaTotalILUVA = 100;

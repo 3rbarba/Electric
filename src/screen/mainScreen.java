@@ -379,6 +379,7 @@ public class mainScreen {
                         comodoArea.remove(comodoSelecionado);
                         comodoTipo.remove(comodoSelecionado);
                         comodoTMDVA.remove(comodoSelecionado);
+                        comodoQtdTomadas.remove(comodoSelecionado);
                         comodoILUVA.remove(comodoSelecionado);
                         tableModelComodos.removeRow(indexToRemove);
                     }
@@ -424,12 +425,13 @@ public class mainScreen {
     private void atualizarResumoComodos() {
         if (tableModelComodos.getRowCount() == 0) {
             comodoTMDVA.clear();
+            comodoQtdTomadas.clear();
             comodoILUVA.clear();
         } else if (!calcComodos(tableModelComodos)) {
             return;
         }
         resumoTomadas.setText(String.format(Locale.forLanguageTag("pt-BR"),
-                "Total de tomadas: %d VA", somarTomadas()));
+                "Total de tomadas: %d VA (%d tomadas)", somarTomadas(), somarQuantidadeTomadas()));
         resumoIluminacao.setText(String.format(Locale.forLanguageTag("pt-BR"),
                 "Total de iluminação: %d VA", somarIluminacao()));
         resumoGeral.setText(String.format(Locale.forLanguageTag("pt-BR"),

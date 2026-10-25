@@ -289,16 +289,18 @@ public class circuitosScreen {
                 .append("Ampacidade Iz: referência da Tabela 36 (cobre/PVC 70 °C); validar edição vigente da NBR 5410 e instalação real.\n\n");
 
         texto.append("CÔMODOS, ÁREAS E CARGAS\n");
-        texto.append("Cômodo\tTipo\tÁrea (m²)\tPerímetro (m)\tTomadas (VA)\tIluminação (VA)\n");
+        texto.append("Cômodo\tTipo\tÁrea (m²)\tPerímetro (m)\tTomadas (qtd)\tTomadas (VA)\tIluminação (VA)\n");
         for (String nome : new TreeSet<>(comodos.comodoArea.keySet())) {
             texto.append(nome).append('\t')
                     .append(comodos.comodoTipo.getOrDefault(nome, "")).append('\t')
                     .append(formatar(comodos.comodoArea.getOrDefault(nome, 0.0))).append('\t')
                     .append(formatar(comodos.comodoPerimetro.getOrDefault(nome, 0.0))).append('\t')
+                    .append(comodos.comodoQtdTomadas.getOrDefault(nome, 0)).append('\t')
                     .append(comodos.comodoTMDVA.getOrDefault(nome, 0)).append('\t')
                     .append(comodos.comodoILUVA.getOrDefault(nome, 0)).append('\n');
         }
-        texto.append("TOTAL TOMADAS (VA)\t").append(comodos.somarTomadas()).append('\n')
+        texto.append("TOTAL TOMADAS (qtd)\t").append(comodos.somarQuantidadeTomadas()).append('\n')
+                .append("TOTAL TOMADAS (VA)\t").append(comodos.somarTomadas()).append('\n')
                 .append("TOTAL ILUMINAÇÃO (VA)\t").append(comodos.somarIluminacao()).append('\n')
                 .append("TOTAL CÔMODOS (VA)\t")
                 .append(comodos.somarTomadas() + comodos.somarIluminacao()).append("\n\n");
@@ -408,20 +410,22 @@ public class circuitosScreen {
         html.append("<h2>Cômodos, Áreas e Cargas</h2>")
                 .append("<table><thead><tr>")
                 .append("<th>Cômodo</th><th>Tipo</th><th>Área (m²)</th><th>Perímetro (m)</th>")
-                .append("<th>Tomadas (VA)</th><th>Iluminação (VA)</th>")
+                .append("<th>Tomadas (qtd)</th><th>Tomadas (VA)</th><th>Iluminação (VA)</th>")
                 .append("</tr></thead><tbody>");
         for (String nome : new TreeSet<>(comodos.comodoArea.keySet())) {
             html.append("<tr><td>").append(htmlEscape(nome)).append("</td><td>")
                     .append(htmlEscape(comodos.comodoTipo.getOrDefault(nome, ""))).append("</td><td class='num'>")
                     .append(formatar(comodos.comodoArea.getOrDefault(nome, 0.0))).append("</td><td class='num'>")
                     .append(formatar(comodos.comodoPerimetro.getOrDefault(nome, 0.0))).append("</td><td class='num'>")
+                    .append(comodos.comodoQtdTomadas.getOrDefault(nome, 0)).append("</td><td class='num'>")
                     .append(comodos.comodoTMDVA.getOrDefault(nome, 0)).append("</td><td class='num'>")
                     .append(comodos.comodoILUVA.getOrDefault(nome, 0)).append("</td></tr>");
         }
         html.append("<tr><th colspan='4'>Totais dos cômodos</th><th>")
+                .append(comodos.somarQuantidadeTomadas()).append("</th><th>")
                 .append(comodos.somarTomadas()).append(" VA</th><th>")
                 .append(comodos.somarIluminacao()).append(" VA</th></tr>")
-                .append("<tr><th colspan='5'>Total geral de tomadas e iluminação</th><th>")
+                .append("<tr><th colspan='5'>Total geral de tomadas e iluminação</th><th colspan='2'>")
                 .append(comodos.somarTomadas() + comodos.somarIluminacao()).append(" VA</th></tr>")
                 .append("</tbody></table>");
 
