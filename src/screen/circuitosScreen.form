@@ -203,7 +203,7 @@
               </component>
             </children>
           </scrollpane>
-          <grid id="panelRodape_id" binding="panelRodape" layout-manager="GridLayoutManager" row-count="2" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="6" vgap="2">
+          <grid id="panelRodape_id" binding="panelRodape" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="6" vgap="2">
             <margin top="2" left="4" bottom="2" right="4"/>
             <constraints>
               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
@@ -215,7 +215,7 @@
             <children>
               <component id="legenda_id" class="javax.swing.JLabel" binding="legenda">
                 <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="3" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <font name="Dialog" size="11"/>
@@ -225,7 +225,7 @@
               </component>
               <component id="btnAnterior_id" class="javax.swing.JButton" binding="btnAnterior">
                 <constraints>
-                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <background color="-13418155"/>
@@ -237,26 +237,14 @@
               </component>
               <component id="btnExportar_id" class="javax.swing.JButton" binding="btnExportar">
                 <constraints>
-                  <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <background color="-15763858"/>
                   <font name="Dialog" size="12" style="1"/>
                   <foreground color="-1710101"/>
                   <requestFocusEnabled value="false"/>
-                  <text value="Exportar memorial (TXT)"/>
-                </properties>
-              </component>
-              <component id="btnImprimir_id" class="javax.swing.JButton" binding="btnImprimir">
-                <constraints>
-                  <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <background color="-15763858"/>
-                  <font name="Dialog" size="12" style="1"/>
-                  <foreground color="-1710101"/>
-                  <requestFocusEnabled value="false"/>
-                  <text value="Imprimir"/>
+                  <text value="Exportar"/>
                 </properties>
               </component>
             </children>

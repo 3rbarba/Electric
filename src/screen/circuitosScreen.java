@@ -3,6 +3,8 @@ package screen;
 import servico.quadroCargasService;
 import servico.comodos;
 import servico.demandaEquip;
+import servico.exportadorExcel;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
@@ -10,11 +12,14 @@ import javax.print.attribute.standard.JobName;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -49,7 +54,6 @@ public class circuitosScreen {
     private JButton btnAplicarTodos;
     private JButton btnAnterior;
     private JButton btnExportar;
-    private JButton btnImprimir;
     private JLabel legenda;
     private final Map<String, quadroCargasService.ParametrosCircuito> parametrosPorCircuito;
     private quadroCargasService.Resultado resultado;
@@ -90,7 +94,6 @@ public class circuitosScreen {
         prepararBotao(btnAplicarTodos, new Color(17, 135, 143));
         prepararBotao(btnAnterior, new Color(91, 101, 105));
         prepararBotao(btnExportar, new Color(17, 135, 143));
-        prepararBotao(btnImprimir, new Color(17, 135, 143));
         legenda.setForeground(TEXTO);
         legenda.setFont(new Font("Dialog", Font.PLAIN, 11));
         comboSistema.setToolTipText("Monofásico/bifásico: 2 condutores carregados; trifásico: 3.");
@@ -127,8 +130,7 @@ public class circuitosScreen {
             frame.revalidate();
             frame.repaint();
         });
-        btnExportar.addActionListener(this::exportarMemorial);
-        btnImprimir.addActionListener(e -> imprimirTabela());
+        btnExportar.addActionListener(e -> abrirOpcoesExportacao());
         btnAplicarSelecionados.addActionListener(e -> aplicarParametros(false));
         btnAplicarTodos.addActionListener(e -> aplicarParametros(true));
         recalcular();
@@ -191,11 +193,12 @@ public class circuitosScreen {
         JPanel botoes = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 8, 2));
         botoes.setOpaque(false);
         btnAnterior = new JButton("Anterior");
-        btnExportar = new JButton("Exportar memorial (TXT)");
-        btnImprimir = new JButton("Imprimir");
+        btnExportar = new JButton("Exportar");
+        btnExportar.setFont(new Font("Dialog", Font.BOLD, 12));
+        btnExportar.setPreferredSize(dimensaoBotao("Exportar memorial (TXT)"));
         botoes.add(btnAnterior);
         botoes.add(btnExportar);
-        botoes.add(btnImprimir);
+        botoes.add(Box.createRigidArea(dimensaoBotao("Imprimir")));
         panelRodape.add(botoes, java.awt.BorderLayout.SOUTH);
         panelQuadro.add(panelRodape, java.awt.BorderLayout.SOUTH);
         main.add(panelQuadro, java.awt.BorderLayout.CENTER);
@@ -264,21 +267,182 @@ public class circuitosScreen {
         }
     }
 
-    private void exportarMemorial(ActionEvent evento) {
-        JFileChooser seletor = new JFileChooser();
-        seletor.setDialogTitle("Salvar memorial de cálculo");
-        seletor.setSelectedFile(new java.io.File("memorial_quadro_de_cargas.txt"));
-        if (seletor.showSaveDialog(main) != JFileChooser.APPROVE_OPTION) {
+    private void abrirOpcoesExportacao() {
+        Object[] opcoes = {"Exportar PDF", "Exportar TXT", "Exportar Excel", "Imprimir", "Cancelar"};
+        int selecao = JOptionPane.showOptionDialog(main,
+                "Escolha o formato ou a ação para o memorial.",
+                "Exportar memorial",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                opcoes,
+                opcoes[0]);
+        switch (selecao) {
+            case 0:
+                exportarPdf();
+                break;
+            case 1:
+                exportarTxt();
+                break;
+            case 2:
+                exportarExcel();
+                break;
+            case 3:
+                imprimirTabela();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void exportarTxt() {
+        Path arquivo = escolherArquivo("Salvar memorial de cálculo em TXT",
+                "memorial_quadro_de_cargas.txt", "TXT", "Arquivos de texto (*.txt)");
+        if (arquivo == null) {
             return;
         }
         try {
-            Files.write(seletor.getSelectedFile().toPath(),
-                    montarMemorial().getBytes(StandardCharsets.UTF_8));
-            JOptionPane.showMessageDialog(main, "Memorial exportado com sucesso.");
+            Files.write(arquivo, montarMemorial().getBytes(StandardCharsets.UTF_8));
+            mostrarExportacaoConcluida(arquivo);
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(main, "Não foi possível exportar o memorial: " + ex.getMessage(),
-                    "Erro ao exportar", JOptionPane.ERROR_MESSAGE);
+            mostrarErroExportacao(ex);
         }
+    }
+
+    private void exportarPdf() {
+        Path arquivo = escolherArquivo("Salvar memorial de cálculo em PDF",
+                "memorial_quadro_de_cargas.pdf", "PDF", "Documento PDF (*.pdf)");
+        if (arquivo == null) {
+            return;
+        }
+        try (java.io.OutputStream saida = Files.newOutputStream(arquivo)) {
+            PdfRendererBuilder builder = new PdfRendererBuilder();
+            builder.withHtmlContent(montarMemorialHtml(), null);
+            builder.toStream(saida);
+            builder.run();
+        } catch (Exception ex) {
+            mostrarErroExportacao(ex);
+            return;
+        }
+        mostrarExportacaoConcluida(arquivo);
+    }
+
+    private void exportarExcel() {
+        Path arquivo = escolherArquivo("Salvar quadro de cargas em Excel",
+                "quadro_de_cargas.xlsx", "XLSX", "Planilha Excel (*.xlsx)");
+        if (arquivo == null) {
+            return;
+        }
+        try {
+            exportadorExcel.exportar(arquivo, montarPlanilhasExcel());
+            mostrarExportacaoConcluida(arquivo);
+        } catch (IOException ex) {
+            mostrarErroExportacao(ex);
+        }
+    }
+
+    private Path escolherArquivo(String titulo, String nomePadrao, String extensao, String descricao) {
+        JFileChooser seletor = new JFileChooser();
+        seletor.setDialogTitle(titulo);
+        seletor.setSelectedFile(new java.io.File(nomePadrao));
+        seletor.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(descricao, extensao));
+        if (seletor.showSaveDialog(main) != JFileChooser.APPROVE_OPTION) {
+            return null;
+        }
+        Path arquivo = seletor.getSelectedFile().toPath();
+        String sufixo = "." + extensao.toLowerCase(Locale.ROOT);
+        if (!arquivo.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(sufixo)) {
+            arquivo = arquivo.resolveSibling(arquivo.getFileName() + sufixo);
+        }
+        if (Files.exists(arquivo) && JOptionPane.showConfirmDialog(main,
+                "O arquivo já existe. Deseja substituí-lo?",
+                "Confirmar substituição", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+            return null;
+        }
+        return arquivo;
+    }
+
+    private void mostrarExportacaoConcluida(Path arquivo) {
+        JOptionPane.showMessageDialog(main,
+                "Arquivo exportado com sucesso:\n" + arquivo.toAbsolutePath(),
+                "Exportação concluída", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void mostrarErroExportacao(Exception ex) {
+        JOptionPane.showMessageDialog(main, "Não foi possível exportar o memorial: " + ex.getMessage(),
+                "Erro ao exportar", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private Map<String, List<List<Object>>> montarPlanilhasExcel() {
+        Map<String, List<List<Object>>> planilhas = new LinkedHashMap<>();
+
+        List<List<Object>> linhasComodos = new ArrayList<>();
+        linhasComodos.add(linha("Cômodo", "Tipo", "Área (m²)", "Perímetro (m)",
+                "Tomadas (qtd)", "Tomadas (VA)", "Iluminação (VA)"));
+        for (String nome : new TreeSet<>(comodos.comodoArea.keySet())) {
+            linhasComodos.add(linha(nome, comodos.comodoTipo.getOrDefault(nome, ""),
+                    comodos.comodoArea.getOrDefault(nome, 0.0),
+                    comodos.comodoPerimetro.getOrDefault(nome, 0.0),
+                    comodos.comodoQtdTomadas.getOrDefault(nome, 0),
+                    comodos.comodoTMDVA.getOrDefault(nome, 0),
+                    comodos.comodoILUVA.getOrDefault(nome, 0)));
+        }
+        linhasComodos.add(linha("TOTAL", "", "", "", comodos.somarQuantidadeTomadas(),
+                comodos.somarTomadas(), comodos.somarIluminacao()));
+        planilhas.put("Comodos", linhasComodos);
+
+        List<List<Object>> linhasEquipamentos = new ArrayList<>();
+        linhasEquipamentos.add(linha("Equipamento", "Tabela de demanda",
+                "Potência instalada (W/VA)", "Potência considerada na demanda (W/VA)"));
+        for (demandaEquip.CargaEspecial carga : demandaEquip.obterCargasEspeciais(equipamentos)) {
+            linhasEquipamentos.add(linha(carga.getNome(), carga.getTabela(),
+                    carga.getPotenciaInstalada(), carga.getPotenciaCorrigida()));
+        }
+        if (linhasEquipamentos.size() == 1) {
+            linhasEquipamentos.add(linha("Nenhum equipamento especial cadastrado."));
+        }
+        planilhas.put("Equipamentos", linhasEquipamentos);
+
+        List<List<Object>> linhasCircuitos = new ArrayList<>();
+        linhasCircuitos.add(Arrays.<Object>asList((Object[]) COLUNAS));
+        for (int linha = 0; linha < modeloTabela.getRowCount(); linha++) {
+            List<Object> dados = new ArrayList<>();
+            for (int coluna = 0; coluna < modeloTabela.getColumnCount(); coluna++) {
+                dados.add(modeloTabela.getValueAt(linha, coluna));
+            }
+            linhasCircuitos.add(dados);
+        }
+        planilhas.put("Circuitos", linhasCircuitos);
+
+        List<List<Object>> linhasResumo = new ArrayList<>();
+        linhasResumo.add(linha("Resumo do dimensionamento", ""));
+        linhasResumo.add(linha("Sistema", comboSistema.getSelectedItem()));
+        linhasResumo.add(linha("Tensão nominal (V)", comboTensao.getSelectedItem()));
+        linhasResumo.add(linha("Potência instalada total (kW)", resultado.getPotenciaInstalada() / 1000.0));
+        linhasResumo.add(linha("Demanda total calculada (kVA)", resultado.getDemanda() / 1000.0));
+        linhasResumo.add(linha("", ""));
+        linhasResumo.add(linha("Sigla", "Significado"));
+        linhasResumo.add(linha("Ip", "Corrente de projeto"));
+        linhasResumo.add(linha("Ic", "Corrente corrigida (Ip ÷ FCA ÷ FCT)"));
+        linhasResumo.add(linha("Iz", "Capacidade de condução de corrente do condutor"));
+        linhasResumo.add(linha("Disj", "Corrente nominal do disjuntor"));
+        linhasResumo.add(linha("S (mm²)", "Seção nominal do condutor"));
+        linhasResumo.add(linha("DR", "Dispositivo diferencial residual requerido"));
+        linhasResumo.add(linha("Pot. Inst.", "Potência instalada no circuito"));
+        linhasResumo.add(linha("TUG / TUE", "Tomada de uso geral / tomada de uso específico"));
+        if (!resultado.getAvisos().isEmpty()) {
+            linhasResumo.add(linha("", ""));
+            linhasResumo.add(linha("Avisos de dimensionamento", ""));
+            for (String aviso : resultado.getAvisos()) {
+                linhasResumo.add(linha(aviso, ""));
+            }
+        }
+        planilhas.put("Resumo", linhasResumo);
+        return planilhas;
+    }
+
+    private static List<Object> linha(Object... valores) {
+        return new ArrayList<>(Arrays.asList(valores));
     }
 
     private String montarMemorial() {
@@ -378,7 +542,7 @@ public class circuitosScreen {
             boolean impresso = memorial.print(
                     new MessageFormat("Memorial - Quadro de Cargas"),
                     new MessageFormat(""),
-                    false,
+                    true,
                     null,
                     atributos,
                     true
@@ -395,7 +559,8 @@ public class circuitosScreen {
 
     private String montarMemorialHtml() {
         StringBuilder html = new StringBuilder(
-                "<html><head><meta charset='UTF-8'><style>"
+                "<html><head><meta charset='UTF-8'/><style>"
+                        + "@page{size:A3 landscape;margin:14mm}"
                         + "body{font-family:Arial,sans-serif;font-size:9pt;color:#17242a}"
                         + "h1{font-size:16pt}h2{font-size:12pt;margin-top:16px}"
                         + "table{border-collapse:collapse;width:100%;margin-bottom:10px}"
@@ -405,7 +570,7 @@ public class circuitosScreen {
         html.append("<h1>Memorial - Dimensionamento Elétrico</h1>")
                 .append("<p>Sistema: ").append(htmlEscape(String.valueOf(comboSistema.getSelectedItem())))
                 .append(" | Tensão nominal: ").append(htmlEscape(String.valueOf(comboTensao.getSelectedItem())))
-                .append(" V<br>Ampacidade de referência: Tabela 36 (cobre/PVC 70 °C).</p>");
+                .append(" V<br/>Ampacidade de referência: Tabela 36 (cobre/PVC 70 °C).</p>");
 
         html.append("<h2>Cômodos, Áreas e Cargas</h2>")
                 .append("<table><thead><tr>")
@@ -449,7 +614,6 @@ public class circuitosScreen {
         for (String coluna : COLUNAS) {
             html.append("<th>").append(htmlEscape(coluna)).append("</th>");
         }
-        html.append("</tr></thead><tbody>");
         html.append("</tr></thead><tbody>");
         for (int linha = 0; linha < modeloTabela.getRowCount(); linha++) {
             html.append("<tr>");
@@ -524,5 +688,11 @@ public class circuitosScreen {
         botao.setForeground(TEXTO);
         botao.setFont(new Font("Dialog", Font.BOLD, 12));
         botao.setFocusPainted(false);
+    }
+
+    private static Dimension dimensaoBotao(String texto) {
+        JButton referencia = new JButton(texto);
+        referencia.setFont(new Font("Dialog", Font.BOLD, 12));
+        return referencia.getPreferredSize();
     }
 }

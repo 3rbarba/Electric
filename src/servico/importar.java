@@ -1,5 +1,4 @@
 package servico;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -12,12 +11,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import servico.quadroCargasService.ParametrosCircuito;
+import servico.quadroCargasService.SistemaFases;
 
-import servico.QuadroCargasService.ParametrosCircuito;
-import servico.QuadroCargasService.SistemaFases;
-
-public final class Importar {
-    private Importar() {
+public final class importar {
+    private importar() {
     }
 
     public static List<ComodoImportado> lerComodosCsv(Path arquivo, List<String> tiposValidos)

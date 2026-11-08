@@ -1,12 +1,6 @@
 package servico;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
+import java.util.*;
 import static servico.comodos.comodoILUVA;
 import static servico.comodos.comodoTMDVA;
 import static servico.comodos.comodoTipo;
@@ -17,16 +11,30 @@ public final class quadroCargasService {
     private static final double MAX_CORRENTE_ILUMINACAO = 10.0;
     private static final double MAX_CORRENTE_TUG = 10.0;
     private static final double MAX_POTENCIA_ILUMINACAO = 1800.0;
-    private static final double[] SECOES_CU_PVC_MM2 = {1.5, 2.5, 4.0, 6.0, 10.0};
+    // Tabela 36 da NBR 5410 / PDF raiz do projeto: cabo de cobre, PVC 70 °C, seções nominais até 1000 mm².
+    private static final double[] SECOES_CU_PVC_MM2 = {0.5, 0.75, 1.0, 1.5, 2.5, 4.0, 6.0, 10.0, 16.0, 25.0, 35.0,
+            50.0, 70.0, 95.0, 120.0, 150.0, 185.0, 240.0, 300.0, 400.0, 500.0, 630.0, 800.0, 1000.0};
     private static final String[] METODOS_REFERENCIA = {"A1", "A2", "B1", "B2", "C", "D"};
-    // Tabela 36 anexada: [seção][2 ou 3 condutores carregados], cobre/PVC 70 °C.
+    //2 ou 3 condutores carregados, cobre/PVC 70 °C.
     private static final double[][][] CORRENTES_TABELA_36 = {
-            {{14.0, 13.5}, {19.5, 18.0}, {26.0, 24.0}, {34.0, 31.0}, {46.0, 42.0}},
-            {{14.0, 13.0}, {18.5, 17.5}, {25.0, 23.0}, {32.0, 29.0}, {43.0, 39.0}},
-            {{17.5, 15.5}, {24.0, 21.0}, {32.0, 28.0}, {41.0, 36.0}, {57.0, 50.0}},
-            {{16.5, 15.0}, {23.0, 20.0}, {30.0, 27.0}, {38.0, 34.0}, {52.0, 46.0}},
-            {{19.5, 17.5}, {27.0, 24.0}, {36.0, 32.0}, {46.0, 41.0}, {63.0, 57.0}},
-            {{22.0, 18.0}, {29.0, 24.0}, {38.0, 31.0}, {47.0, 39.0}, {63.0, 52.0}}
+            {{7.0, 7.0}, {9.0, 9.0}, {11.0, 10.0}, {14.5, 13.5}, {19.5, 18.0}, {26.0, 24.0}, {34.0, 31.0}, {46.0, 42.0}, {61.0, 56.0}, {80.0, 73.0},
+                    {99.0, 89.0}, {119.0, 108.0}, {151.0, 136.0}, {182.0, 164.0}, {210.0, 188.0}, {240.0, 216.0}, {273.0, 245.0}, {321.0, 286.0},
+                    {367.0, 328.0}, {438.0, 390.0}, {502.0, 447.0}, {578.0, 514.0}, {669.0, 593.0}, {767.0, 679.0}},
+            {{7.0, 7.0}, {9.0, 9.0}, {11.0, 10.0}, {14.0, 13.0}, {18.5, 17.5}, {25.0, 23.0}, {32.0, 29.0}, {43.0, 39.0}, {57.0, 52.0}, {75.0, 68.0},
+                    {92.0, 83.0}, {110.0, 99.0}, {139.0, 125.0}, {167.0, 150.0}, {192.0, 172.0}, {219.0, 196.0}, {248.0, 223.0}, {291.0, 261.0},
+                    {334.0, 298.0}, {398.0, 355.0}, {456.0, 406.0}, {526.0, 467.0}, {609.0, 540.0}, {698.0, 618.0}},
+            {{9.0, 8.0}, {11.0, 10.0}, {14.0, 12.0}, {17.5, 15.5}, {24.0, 21.0}, {32.0, 28.0}, {41.0, 36.0}, {57.0, 50.0}, {76.0, 68.0}, {101.0, 89.0},
+                    {125.0, 110.0}, {151.0, 134.0}, {192.0, 171.0}, {232.0, 207.0}, {269.0, 239.0}, {309.0, 275.0}, {353.0, 314.0}, {415.0, 370.0},
+                    {477.0, 426.0}, {571.0, 510.0}, {656.0, 587.0}, {758.0, 678.0}, {881.0, 788.0}, {1012.0, 906.0}},
+            {{9.0, 8.0}, {11.0, 10.0}, {13.0, 12.0}, {16.5, 15.0}, {23.0, 20.0}, {30.0, 27.0}, {38.0, 34.0}, {52.0, 46.0}, {69.0, 62.0}, {90.0, 80.0},
+                    {111.0, 99.0}, {133.0, 118.0}, {168.0, 149.0}, {201.0, 179.0}, {232.0, 206.0}, {265.0, 236.0}, {300.0, 268.0}, {351.0, 313.0},
+                    {401.0, 358.0}, {477.0, 425.0}, {545.0, 486.0}, {626.0, 559.0}, {723.0, 645.0}, {827.0, 738.0}},
+            {{10.0, 9.0}, {13.0, 11.0}, {15.0, 14.0}, {19.5, 17.5}, {27.0, 24.0}, {36.0, 32.0}, {46.0, 41.0}, {63.0, 57.0}, {85.0, 76.0}, {112.0, 96.0},
+                    {138.0, 119.0}, {168.0, 144.0}, {213.0, 184.0}, {258.0, 223.0}, {299.0, 259.0}, {344.0, 299.0}, {392.0, 341.0}, {461.0, 403.0},
+                    {530.0, 464.0}, {634.0, 557.0}, {729.0, 642.0}, {843.0, 743.0}, {978.0, 865.0}, {1125.0, 996.0}},
+            {{12.0, 10.0}, {15.0, 12.0}, {18.0, 15.0}, {22.0, 18.0}, {29.0, 24.0}, {38.0, 31.0}, {47.0, 39.0}, {63.0, 52.0}, {81.0, 67.0}, {104.0, 86.0},
+                    {125.0, 103.0}, {148.0, 122.0}, {183.0, 151.0}, {216.0, 179.0}, {246.0, 203.0}, {278.0, 230.0}, {312.0, 258.0}, {361.0, 297.0},
+                    {408.0, 336.0}, {478.0, 394.0}, {540.0, 445.0}, {614.0, 506.0}, {700.0, 577.0}, {792.0, 652.0}}
     };
 
     private quadroCargasService() {
@@ -296,7 +304,7 @@ public final class quadroCargasService {
             }
             resultadoCircuitos.add(new Circuito(numero, rascunho.descricao, rascunho.tipo,
                     tensao, rascunho.potenciaInstalada, rascunho.potenciaDemanda,
-                    correnteProjeto, correnteCorrigida, dimensionamento.ampacidade,
+                    correnteProjeto, correnteCorrigida, dimensionamento.corrente,
                     disjuntor, secao, rascunho.drObrigatorio, fase, parametros));
             potenciaInstaladaTotal += rascunho.potenciaInstalada;
             demandaTotal += rascunho.potenciaDemanda;
@@ -319,14 +327,14 @@ public final class quadroCargasService {
             potenciaPorCircuito = potencia / divisor;
         }
 
-        int numero = 1;
+        int numero = 0;
         double restante = potencia;
 
         while (restante > 0.01) {
             double trecho = Math.min(restante, potenciaPorCircuito);
 
             circuitos.add(new CircuitoRascunho(
-                    "Iluminação " + numero++,
+                    "Iluminação" + (numero != 0 ? " " + numero++: ""),
                     "Iluminação",
                     trecho,
                     trecho,
@@ -343,13 +351,11 @@ public final class quadroCargasService {
         List<String> locais = new ArrayList<>(cargas.keySet());
         locais.sort(Comparator.naturalOrder());
 
-        // CASO 1: Tomadas especiais (Trata cada local individualmente dividindo em partes iguais)
         if (especiais) {
             for (String local : locais) {
                 double cargaLocal = cargas.get(local);
                 if (cargaLocal <= 0) continue;
 
-                // Calcula o divisor ideal para este local
                 double divisor = 1;
                 double cargaPorCircuito = cargaLocal / divisor;
                 while (cargaPorCircuito > limite) {
@@ -357,13 +363,12 @@ public final class quadroCargasService {
                     cargaPorCircuito = cargaLocal / divisor;
                 }
 
-                // Cria os circuitos iguais para o local
-                int numeroEspecial = 1;
+                int numeroEspecial = 0;
                 double restanteLocal = cargaLocal;
                 while (restanteLocal > 0.01) {
                     double trecho = Math.min(restanteLocal, cargaPorCircuito);
                     circuitos.add(new CircuitoRascunho(
-                            "TUG " + local + " " + numeroEspecial++,
+                            "TUG " + local + " " + (numeroEspecial == 0?" " + numeroEspecial++: ""),
                             "TUG", trecho, trecho, false));
                     restanteLocal -= trecho;
                 }
@@ -371,7 +376,6 @@ public final class quadroCargasService {
             return;
         }
 
-        // CASO 2: Tomadas normais (Agrupadas e divididas igualmente)
         double cargaTotalGeral = 0;
         for (String local : locais) {
             cargaTotalGeral += cargas.get(local);
@@ -380,8 +384,6 @@ public final class quadroCargasService {
         if (cargaTotalGeral <= 0) {
             return;
         }
-
-        // Calcula o divisor ideal baseado na carga total de todos os cômodos
         double divisorGeral = 1;
         double cargaPorCircuitoGeral = cargaTotalGeral / divisorGeral;
         while (cargaPorCircuitoGeral > limite) {
@@ -389,31 +391,14 @@ public final class quadroCargasService {
             cargaPorCircuitoGeral = cargaTotalGeral / divisorGeral;
         }
 
-        // Cria a lista com os nomes de todos os cômodos envolvidos para colocar no nome do circuito
-        String descricaoLocais = String.join(", ", locais);
-
         int numeroGeral = 1;
         double restanteGeral = cargaTotalGeral;
         while (restanteGeral > 0.01) {
             double trecho = Math.min(restanteGeral, cargaPorCircuitoGeral);
             circuitos.add(new CircuitoRascunho(
-                    "TUG demais cômodos " + numeroGeral++ + " (" + descricaoLocais + ")",
+                    "TUG demais cômodos " + (numeroGeral == 0? "" :" " + numeroGeral++),
                     "TUG", trecho, trecho, false));
             restanteGeral -= trecho;
-        }
-    }
-
-
-    private static void dividirCargaEmCircuitos(String descricao, double potencia, double limite,
-                                                List<CircuitoRascunho> circuitos) {
-        double restante = potencia;
-        int numero = 1;
-        while (restante > 0) {
-            double trecho = Math.min(restante, limite);
-            String descricaoCircuito = numero == 1 ? descricao : descricao + " (continuação " + numero + ")";
-            circuitos.add(new CircuitoRascunho(descricaoCircuito, "TUG", trecho, trecho, true));
-            restante -= trecho;
-            numero++;
         }
     }
 
@@ -433,37 +418,44 @@ public final class quadroCargasService {
     }
 
     private static boolean ehAreaEspecial(String tipo) {
-        return tipo.contains("cozinha") || tipo.contains("copa") || tipo.contains("serviço")
-                || tipo.contains("servico") || tipo.contains("lavanderia")
-                || tipo.contains("banheiro") || tipo.contains("suíte") || tipo.contains("suite")
-                || tipo.contains("varanda") || tipo.contains("garagem") || tipo.contains("extern");
+        if (tipo == null) return false;
+        String normalizado = tipo.toLowerCase(Locale.ROOT);
+
+        Set<String> comodoEspecial = new HashSet<>(Arrays.asList(
+                "cozinha", "copa", "serviço", "servico", "lavanderia", "banheiro", "suíte", "garagem"
+        ));
+        return comodoEspecial.stream().anyMatch(normalizado::contains);
     }
 
     private static boolean exigeDr(String nome) {
+        if (nome == null) return false;
         String normalizado = nome.toLowerCase(Locale.ROOT);
-        return normalizado.contains("chuveiro") || normalizado.contains("aquecedor")
-                || normalizado.contains("torneira elétrica") || normalizado.contains("torneira eletrica")
-                || normalizado.contains("hidromassagem") || normalizado.contains("bomba");
+
+        Set<String> nomes = new HashSet<>(Arrays.asList(
+                "chuveiro", "aquecedor", "torneira elétrica", "hidromassagem", "bomba"
+        ));
+        return nomes.stream().anyMatch(normalizado::contains);
     }
 
     private static final class Dimensionamento {
         private final int disjuntor;
         private final double secao;
-        private final double ampacidade;
+        private final double corrente;
 
-        private Dimensionamento(int disjuntor, double secao, double ampacidade) {
+        private Dimensionamento(int disjuntor, double secao, double corrente) {
             this.disjuntor = disjuntor;
             this.secao = secao;
-            this.ampacidade = ampacidade;
+            this.corrente = corrente;
         }
     }
 
-    private static Dimensionamento dimensionarCondutor(double correnteProjeto, double correnteCorrigida, String tipo,
-                                                       ParametrosCircuito parametros) {
-        int[] disjuntores = "Iluminação".equals(tipo)
-                ? new int[]{10, 16}
-                : "TUG".equals(tipo) ? new int[]{16, 20} : new int[]{10, 16, 20, 25, 32, 40, 50};
-        double secaoMinima = "Iluminação".equals(tipo) ? 1.5 : 2.5;
+    private static Dimensionamento dimensionarCondutor(double correnteProjeto, double correnteCorrigida, String tipo, ParametrosCircuito parametros) {
+
+        int[] disjuntores = tipo.contains("Iluminação") ? new int[]{10, 16}
+                : tipo.contains("Tug") ? new int[]{16, 20}
+                : new int[]{10, 16, 20, 25, 32, 40, 50};
+
+        double secaoMinima = tipo.contains("Iluminação") ? 1.5 : 2.5;
         int metodo = indiceMetodo(parametros.getMetodoInstalacao());
         int condutores = parametros.getCondutoresCarregados() - 2;
 

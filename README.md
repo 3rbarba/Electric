@@ -11,7 +11,7 @@ Aplicativo desktop desenvolvido em Java Swing para registrar cômodos e equipame
 - Cadastro de equipamentos especiais (TUE), com cálculo de demanda conforme as tabelas implementadas no projeto.
 - Geração do quadro de cargas com circuito, descrição, tipo, tensão, potência instalada, correntes de projeto e corrigida, ampacidade, disjuntor, seção do condutor, indicação de DR e fase.
 - Configuração do sistema, tensão, método de instalação, FCA e FCT, individualmente por circuitos selecionados ou em lote.
-- Exportação e impressão do memorial, incluindo cômodos, equipamentos, divisão dos circuitos, resumo e legenda.
+- Menu **Exportar** com exportação do memorial completo em PDF, TXT ou Excel, além da impressão.
 
 ## Tecnologias
 
@@ -57,10 +57,13 @@ src/
 └── servico/
     ├── comodos.java
     ├── demandaEquip.java
+    ├── ExportadorExcel.java
     ├── Importar.java
     ├── potenciaCorrigida.java
     └── QuadroCargasService.java
 ```
+
+Na tela de circuitos, o botão **Exportar** abre as opções para gerar PDF, TXT ou planilha Excel (`.xlsx`), ou imprimir o memorial.
 
 ## Importar um projeto ou cômodos por CSV
 
