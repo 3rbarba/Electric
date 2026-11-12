@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework Condition="'$(AutoCADVersion)' == '2023'">net48</TargetFramework>
+    <TargetFramework Condition="'$(AutoCADVersion)' == '2026'">net8.0-windows</TargetFramework>
+    <OutputType>Library</OutputType>
+    <AssemblyName>EletricAutoCAD</AssemblyName>
+    <RootNamespace>EletricAutoCAD</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AutoCADInstallDir Condition="'$(AutoCADVersion)' == '2023' and '$(AutoCADInstallDir)' == ''">$(ProgramFiles)\Autodesk\AutoCAD 2023</AutoCADInstallDir>
+    <AutoCADInstallDir Condition="'$(AutoCADVersion)' == '2026' and '$(AutoCADInstallDir)' == ''">$(ProgramFiles)\Autodesk\AutoCAD 2026</AutoCADInstallDir>
+  </PropertyGroup>
+
+  <Target Name="ValidateAutoCADVersion" BeforeTargets="PrepareForBuild"
+          Condition="'$(AutoCADVersion)' != '2023' and '$(AutoCADVersion)' != '2026'">
+    <Error Text="Defina AutoCADVersion como 2023 ou 2026." />
+  </Target>
+
+  <ItemGroup>
+    <Reference Include="AcCoreMgd">
+      <HintPath>$(AutoCADInstallDir)\AcCoreMgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="AcDbMgd">
+      <HintPath>$(AutoCADInstallDir)\AcDbMgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="AcMgd">
+      <HintPath>$(AutoCADInstallDir)\AcMgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

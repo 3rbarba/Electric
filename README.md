@@ -7,6 +7,7 @@ Aplicativo desktop desenvolvido em Java Swing para registrar cômodos e equipame
 - Cadastro de cômodos com nome, área e perímetro.
 - Importação de memoriais TXT exportados pelo programa, incluindo cômodos, equipamentos e configurações elétricas.
 - Importação de cômodos a partir de arquivos CSV, com separador vírgula ou ponto e vírgula.
+- Integração local com complemento do AutoCAD 2023 e 2026 para receber área e perímetro de polilinhas fechadas.
 - Estimativa de cargas de tomadas de uso geral (TUG) e iluminação.
 - Cadastro de equipamentos especiais (TUE), com cálculo de demanda conforme as tabelas implementadas no projeto.
 - Geração do quadro de cargas com circuito, descrição, tipo, tensão, potência instalada, correntes de projeto e corrigida, ampacidade, disjuntor, seção do condutor, indicação de DR e fase.
@@ -33,10 +34,10 @@ Na raiz do projeto, execute:
 mvn clean package
 ```
 
-O JAR será gerado em `target/electric-1.0.0.jar`. Para iniciar:
+O JAR será gerado em `target/electric-1.2.2.jar`. Para iniciar:
 
 ```bash
-java -jar target/electric-1.0.0.jar
+java -jar target/electric-1.2.2.jar
 ```
 
 Também é possível abrir o projeto no IntelliJ IDEA e executar a classe `Main`.
@@ -79,6 +80,10 @@ Cozinha;Principal;12;14
 ```
 
 Os nomes das colunas podem ser omitidos se os dados estiverem na ordem `Tipo;Nome;Área;Perímetro`. Tipos aceitos: Sala, Quarto, Cozinha, Banheiro, Lavanderia, Área de Serviço, Suíte, Corredor, Varanda, Hall e Outros. Área e perímetro devem ser números não negativos. Os cômodos CSV são adicionados à lista atual; nomes repetidos recebem um sufixo numérico. Importar um memorial substitui os dados atuais do projeto.
+
+## Integração com AutoCAD
+
+Para receber diretamente as medidas de uma polilinha fechada, deixe o ELETRIC aberto e siga as instruções de compilação e uso em [`integracao-autocad/README.md`](integracao-autocad/README.md). O complemento possui builds separados para AutoCAD 2023 e 2026; após o envio, escolha o tipo e o nome do cômodo no aplicativo.
 
 ## Observações sobre os cálculos
 

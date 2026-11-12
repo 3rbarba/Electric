@@ -1,17 +1,18 @@
 package screen;
+
+import servico.AutoCadApiServer;
+import servico.importar;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import servico.importar;
+import java.util.*;
+
 import static servico.comodos.*;
 import static servico.demandaEquip.*;
 
@@ -35,12 +36,17 @@ public class mainScreen {
     private JLabel resumoTomadas;
     private JLabel resumoIluminacao;
     private JLabel resumoGeral;
+    private JLabel statusAutoCad;
+    private JFrame janelaPrincipal;
 
     private final DefaultTableModel tableModelComodos;
     private final ImageIcon icon;
     private importar.ProjetoImportado projetoImportado;
 
     public mainScreen() {
+        if (statusAutoCad == null) {
+            statusAutoCad = new JLabel("AutoCAD: aguardando integração local");
+        }
         if (main == null) {
             criarInterfaceSemFormCompiler();
         }
@@ -97,6 +103,7 @@ public class mainScreen {
         resumoTomadas = new JLabel();
         resumoIluminacao = new JLabel();
         resumoGeral = new JLabel();
+        statusAutoCad = new JLabel("AutoCAD: iniciando integração local...");
         ComodoTXT = new JLabel("CÔMODO:");
         NomeTXT = new JLabel("NOME (opcional):");
         TextArea = new JLabel("ÁREA (m²):");
@@ -135,6 +142,7 @@ public class mainScreen {
         totais.add(resumoTomadas);
         totais.add(resumoIluminacao);
         totais.add(resumoGeral);
+        totais.add(statusAutoCad);
         JPanel botoes = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 8, 2));
         botoes.setOpaque(false);
         botoes.add(Remove);
@@ -146,7 +154,7 @@ public class mainScreen {
         main.add(textDimPredial, java.awt.BorderLayout.CENTER);
 
         for (JLabel label : new JLabel[]{ComodoTXT, NomeTXT, TextArea, TextPer,
-                resumoTomadas, resumoIluminacao, resumoGeral}) {
+                resumoTomadas, resumoIluminacao, resumoGeral, statusAutoCad}) {
             label.setForeground(texto);
         }
         for (JButton button : new JButton[]{Add, ButtonCalc, importarComodos}) {
@@ -273,13 +281,67 @@ public class mainScreen {
 
     public void run() {
         JFrame frame = new JFrame("Dimensionamento Elétrico");
+        janelaPrincipal = frame;
         frame.setContentPane(main);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent event) {
+                pararServidorAutoCad();
+            }
+        });
         frame.setSize(900, 550);
         frame.setLocationRelativeTo(null);
         frame.setIconImage(icon.getImage());
         frame.setVisible(true);
+        iniciarServidorAutoCad();
+    }
 
+    private void iniciarServidorAutoCad() {
+        try {
+            AutoCadApiServer servidor = new AutoCadApiServer(this::receberMedidasAutoCad);
+            servidor.start();
+            autoCadApiServer = servidor;
+            atualizarStatusAutoCad("AutoCAD: API local ativa (porta " + AutoCadApiServer.PORT + ")");
+        } catch (IOException | RuntimeException ex) {
+            atualizarStatusAutoCad("AutoCAD: API local indisponível");
+            JOptionPane.showMessageDialog(main,
+                    "Não foi possível iniciar a integração com o AutoCAD na porta "
+                            + AutoCadApiServer.PORT + ".\n" + ex.getMessage(),
+                    "Integração AutoCAD indisponível", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private AutoCadApiServer autoCadApiServer;
+
+    private void pararServidorAutoCad() {
+        if (autoCadApiServer != null) {
+            autoCadApiServer.close();
+            autoCadApiServer = null;
+        }
+    }
+
+    private void receberMedidasAutoCad(double areaM2, double perimetroM) {
+        SwingUtilities.invokeLater(() -> {
+            area.setText(formatarMedida(areaM2));
+            perimetro.setText(formatarMedida(perimetroM));
+            atualizarStatusAutoCad(
+                    "AutoCAD: medidas recebidas; selecione o tipo e clique Adicionar");
+            Comodos.requestFocusInWindow();
+        });
+    }
+
+    private void atualizarStatusAutoCad(String mensagem) {
+        if (statusAutoCad != null) {
+            statusAutoCad.setText(mensagem);
+        }
+        if (janelaPrincipal != null) {
+            janelaPrincipal.setTitle("Dimensionamento Elétrico — " + mensagem);
+        }
+    }
+
+    private static String formatarMedida(double medida) {
+        return BigDecimal.valueOf(medida).stripTrailingZeros().toPlainString();
     }
 
     private void initListeners() {
